@@ -187,14 +187,27 @@ public class RagicUtility
 
     private JsonObject constructRagicBody(Matter matter, RagicConfiguration mapping)
     {
-        var jsonObject = new JsonObject
+        if (mapping.InjuredPartyDateOfDeathQuestionId != null)
         {
-            [mapping.InjuredPartyFirstNameQuestionId.ToString()] = matter.InjuredPartyFirstName.ToString(),
-            [mapping.InjuredPartyLastNameQuestionId.ToString()] = matter.InjuredPartyLastName.ToString(),
-            [mapping.InjuredPartyBirthDayQuestionId.ToString()] = matter.InjuredPartyDateOfBirth.ToString(),
-            [mapping.InjuredPartyDateOfDeathQuestionId.ToString()] = matter.InjuredPartyDateOfBirth.ToString(),
-        };
-        return jsonObject;
+            var jsonObject = new JsonObject
+            {
+                [mapping.InjuredPartyFirstNameQuestionId.ToString()] = matter.InjuredPartyFirstName.ToString(),
+                [mapping.InjuredPartyLastNameQuestionId.ToString()] = matter.InjuredPartyLastName.ToString(),
+                [mapping.InjuredPartyBirthDayQuestionId.ToString()] = matter.InjuredPartyDateOfBirth.ToString(),
+                [mapping.InjuredPartyDateOfDeathQuestionId.ToString()] = matter.InjuredPartyDateOfBirth.ToString(),
+            };
+            return jsonObject;
+        }
+        else
+        {
+            var jsonObject = new JsonObject
+            {
+                [mapping.InjuredPartyFirstNameQuestionId.ToString()] = matter.InjuredPartyFirstName.ToString(),
+                [mapping.InjuredPartyLastNameQuestionId.ToString()] = matter.InjuredPartyLastName.ToString(),
+                [mapping.InjuredPartyBirthDayQuestionId.ToString()] = matter.InjuredPartyDateOfBirth.ToString(),
+            };
+            return jsonObject;
+        }
     }
 
     private bool ClientIsInjuredParty(string clientFirstName, string clientLastName, string injuredPartyFirstName, string injuredPartyLastName)
@@ -207,7 +220,7 @@ public class RagicUtility
         
         {"Acetaminophen Use During Pregnancy", new RagicConfiguration("dev-nec/3", "1000507",  "1000541", "1000543", "1000545", "1000555") }, //Used in lower environments for testing only
                                                 //Sheet Name //MatterId //FirstName //Last Name //Birthday //Date of Death
-        {"NEC Infant Formula", new RagicConfiguration("nec/8", "1001146",  "1001181", "1001183", "1001185", "1001338") },
+        {"NEC Infant Formula", new RagicConfiguration("nec/8", "1001146",  "1001181", "1001183", "1001185", null) },
         {"Zantac Pharmaceutical Use", new RagicConfiguration("zantac/1", "1000862",  "1000897", "1000899", "1000864", "1000904") },
         {"Camp Lejeune Exposure", new RagicConfiguration("clj/3", "1001757",  "1001546", "1001550", "1001553", "1001556" ) },
         {"Talcum Powder Exposure", new RagicConfiguration("talc/1", "1001962",  "1001979", "1001982", "1001985", "1001988") }
