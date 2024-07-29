@@ -37,12 +37,14 @@ public class RagicUtility
         var SalesForceIds = await FetchSalesForceIds();
         foreach (var salesForceId in SalesForceIds)
         {
+
+            _logger.LogInformation($"Checking Archer Id: {salesForceId.ArcherId}");
             var sfId = salesForceId.SalesforceRequestId.ToString();
             var matter = await GetMatter(sfId, salesForceId.CaseName, salesForceId.ArcherId);
 
-            if (matter != null && ( !ClientIsInjuredParty(matter.ClientFirstName, matter.ClientLastName, matter.InjuredPartyFirstName, matter.InjuredPartyLastName) ))
+            if (matter != null && ( matter.ClientId != matter.InjuredPartyId ))
             {
-
+                _logger.LogInformation($"Patching Review with Archer Id: {salesForceId.ArcherId}");
                 await PatchArcherReviews(matter);
             }
         }
@@ -52,7 +54,7 @@ public class RagicUtility
     {
         using var connection = new NpgsqlConnection(_options.PostgresConnectionString);
         await connection.OpenAsync();
-        using var command = new NpgsqlCommand("SELECT \"Id\", \"MatterId\", \"CaseName\", \"ArcherId\" FROM \"RecordReviews\" WHERE \"ArcherId\" IS NOT NULL", connection);
+        using var command = new NpgsqlCommand("SELECT \"Id\", \"MatterId\", \"CaseName\", \"ArcherId\" FROM \"RecordReviews\" WHERE \"ArcherId\" IS NOT NULL ORDER BY \"ArcherId\"", connection);
         using var reader = command.ExecuteReader();
         var results = new List<(Guid RequestId, string SalesforceRequestId, string CaseName, int ArcherId)>();
         while (await reader.ReadAsync())
