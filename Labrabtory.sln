@@ -1,0 +1,30 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 17
+VisualStudioVersion = 17.9.34723.18
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Labrabtory", "Labrabtory\Labrabtory.csproj", "{A9A6BAA1-CEE3-466F-871D-D37AED03E0E4}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{1988CC17-5363-419B-BCCF-C6EAFAA8BE88}"
+	ProjectSection(SolutionItems) = preProject
+		appsettings.json = appsettings.json
+	EndProjectSection
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{A9A6BAA1-CEE3-466F-871D-D37AED03E0E4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A9A6BAA1-CEE3-466F-871D-D37AED03E0E4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A9A6BAA1-CEE3-466F-871D-D37AED03E0E4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A9A6BAA1-CEE3-466F-871D-D37AED03E0E4}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {4B30110D-8E59-44B1-8767-7C4E3B987BFA}
+	EndGlobalSection
+EndGlobal
