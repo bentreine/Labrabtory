@@ -4,9 +4,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace Labrabtory;
+namespace Laboratory;
 
-public class LabratoryOptions
+public class LaboratoryOptions
 {
     public string? PostgresConnectionString { get; set; }
     public string? SalesforceUri { get; set; }

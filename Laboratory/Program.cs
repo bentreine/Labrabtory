@@ -1,5 +1,5 @@
 ﻿// See https://aka.ms/new-console-template for more information
-using Labrabtory;
+using Laboratory;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -15,7 +15,7 @@ var host = Host.CreateDefaultBuilder(args)
     {
         services.AddScoped<RagicUtility>();
         services.AddHttpClient();
-        services.Configure<LabratoryOptions>(context.Configuration.GetSection("AppSettings"));
+        services.Configure<LaboratoryOptions>(context.Configuration.GetSection("AppSettings"));
 
     })
     .Build();

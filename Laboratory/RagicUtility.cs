@@ -12,18 +12,18 @@ using Newtonsoft.Json;
 using System.Data;
 
 
-namespace Labrabtory;
+namespace Laboratory;
 
 public class RagicUtility
 {
-    private readonly LabratoryOptions _options;
+    private readonly LaboratoryOptions _options;
     private readonly HttpClient _httpClient;
     private readonly ILogger<RagicUtility> _logger;
     private string? SalesforceAccessToken { get; set; }
 
 
 
-    public RagicUtility(IOptions<LabratoryOptions> options, HttpClient httpClient, ILogger<RagicUtility> logger)
+    public RagicUtility(IOptions<LaboratoryOptions> options, HttpClient httpClient, ILogger<RagicUtility> logger)
     {
         _options = options.Value;
         _httpClient = httpClient;
