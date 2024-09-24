@@ -23,4 +23,6 @@ var host = Host.CreateDefaultBuilder(args)
 host.Start();
 
 var service = host.Services.GetRequiredService<RagicUtility>();
-await service.UpdateClientInformationOnRagic();
+await service.AuditCompletedMedicalReviews();
+
+//await service.UpdateClientInformationOnRagic();
