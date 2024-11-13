@@ -48,7 +48,6 @@ public class RagicUtility
             }
         }
     }
-
     public async Task AuditCompletedMedicalReviews()
     {
         /*
@@ -196,8 +195,7 @@ public class RagicUtility
     private async Task<List<(Guid RequestId, string MatterId, string SalesForceId, string ReviewDetailsJson, List<string> MedicalRecordIds, DateTime Created)>> FetchCompletedMedicalReviews()
     {
 
-
-        var connectionString = "Server=kp-core-psql-prod.postgres.database.azure.com;Database=medicalrecordsdb;User Id=software_engineers;Password=KellerPostman123!;";
+        var connectionString = _options.PostgresConnectionString;
         using var connection = new NpgsqlConnection(connectionString);
         await connection.OpenAsync();
         using var command = new NpgsqlCommand("SELECT \"Id\", \"MatterId\", \"SalesforceId\", \"ReviewDetails\", \"MedicalRecordIds\", \"Created\" FROM \"RecordReviews\" WHERE \"StatusId\" = 3 OR \"StatusId\" = 4 ORDER BY \"ArcherId\"", connection);
@@ -452,6 +450,12 @@ public record MedicalRecordInfo
 
     [JsonProperty("Name")]
     public string Name { get; set; }
+
+    [JsonProperty("litify_docs__Folder_Path__c")]
+    public string Folder { get; set; }
+
+    [JsonProperty("litify_docs__Document_Category__c")]
+    public string DocCategory { get; set; }
 }
 public record RagicConfiguration(string SheetName, 
     string MatterQuestionId, 
@@ -459,4 +463,5 @@ public record RagicConfiguration(string SheetName,
     string InjuredPartyLastNameQuestionId, 
     string InjuredPartyBirthDayQuestionId,
     string InjuredPartyDateOfDeathQuestionId);
+}
 
