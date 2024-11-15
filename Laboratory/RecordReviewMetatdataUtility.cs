@@ -49,7 +49,7 @@ namespace Laboratory
             //Ensure all docs sent to Archer are in "in review"
             //Ensure all docs sent to Archer are tracked in PostgreSQL
 
-            var incompleteRecordReviews = archerAudits.Where(a => a.RecordReviewStatusId != 3 || a.RecordReviewStatusId != 4);
+            var incompleteRecordReviews = archerAudits.Where(a => a.RecordReviewStatusId != 3 && a.RecordReviewStatusId != 4);
             var completedRecordReviews = archerAudits.Where(x => x.RecordReviewStatusId == 3 || x.RecordReviewStatusId == 4);
 
             List<IncompleteAuditReport> incompleteAudits = new List<IncompleteAuditReport>();
