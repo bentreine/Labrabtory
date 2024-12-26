@@ -14,6 +14,7 @@ var host = Host.CreateDefaultBuilder(args)
     .ConfigureServices((context, services) =>
     {
         services.AddScoped<RagicUtility>();
+        services.AddScoped<RecordReviewMetatdataUtility>();
         services.AddHttpClient();
         services.Configure<LaboratoryOptions>(context.Configuration.GetSection("AppSettings"));
 
@@ -23,6 +24,10 @@ var host = Host.CreateDefaultBuilder(args)
 host.Start();
 
 var service = host.Services.GetRequiredService<RagicUtility>();
-await service.AuditCompletedMedicalReviews();
+var metaService = host.Services.GetRequiredService<RecordReviewMetatdataUtility>();
+
+//await service.AuditCompletedMedicalReviews();
+
+await metaService.AuditArcher();
 
 //await service.UpdateClientInformationOnRagic();

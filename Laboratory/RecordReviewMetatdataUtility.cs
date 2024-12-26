@@ -21,10 +21,10 @@ namespace Laboratory
     public class RecordReviewMetatdataUtility
     {
 
-        static string DBConnectionString = "Connection String";
+        static string DBConnectionString = "Server=kp-core-psql-prod.postgres.database.azure.com;Database=medicalrecordsdb;User Id=kpsqladmin;Password=b6Nm]oQgu*x};";
         private readonly HttpClient _httpClient;
-        private readonly string BaseUri = "https://api.salesforce.com";
-        private readonly string FileInfoPath = "/fileinfo";
+        private readonly string BaseUri = "https://kellerlenkner2.my.salesforce.com";
+        private readonly string FileInfoPath = "/services/data/v60.0/sobjects/litify_docs__File_Info__c";
         private readonly ILogger<RecordReviewMetatdataUtility> _logger;
 
         private static readonly JsonSerializerOptions IgnoreNullSerializationOption = new()
@@ -38,12 +38,15 @@ namespace Laboratory
             _logger = logger;
         }
 
-        public async void AuditArcher()
+        public async Task AuditArcher()
         {
+            _logger.LogInformation("Starting Archer Audit");
+            _logger.LogInformation("Parsing CSV for Medical Records");
             List<MedicalRecord> medicalRecords = ParseCSVForMedialRecords();
 
             List<RecordReview> recordReviews = await GetRecordReviewsFromPostgres();
 
+            _logger.LogInformation("Mapping Archer Audits");    
             List<ArcherAudit> archerAudits = MapArcherAudits(recordReviews, medicalRecords);
 
             //Ensure all docs sent to Archer are in "in review"
@@ -54,29 +57,44 @@ namespace Laboratory
 
             List<IncompleteAuditReport> incompleteAudits = new List<IncompleteAuditReport>();
             List<CompleteAuditReport> completeAuditReports = new List<CompleteAuditReport>();
+
+            var count = 0;
+            var totalCount = incompleteRecordReviews.Count();
+            _logger.LogInformation("Auditing Incomplete Reviews");
+
             foreach (var incompleteRecordReview in incompleteRecordReviews)
             {
-
+                _logger.LogInformation($"Auditing Incomplete Reviews {count} of {totalCount}");
+                count++;
                 var incompleteAudit = await AuditIncompleteReview(incompleteRecordReview);
                 if (incompleteAudit != null)
                 {
                     incompleteAudits.Add(incompleteAudit);
                 }
             }
-
+            _logger.LogInformation("Auditing Complete Reviews");
+            count = 0;
+            totalCount = completedRecordReviews.Count();
             foreach (var completedRecordReview in completedRecordReviews)
             {
                 //Ensure all completed reviews have corresponding BMHL files
                 //Ensure all completed reviews have corresponding docs in status "review complete"
 
-               var completeAudit = await AuditCompleteReview(completedRecordReview);
-                if(completeAudit != null)
-                {
-                    completeAuditReports.Add(completeAudit);
-                }
+                _logger.LogInformation($"Auditing Complete Reviews {count} of {totalCount}");
+                count++;
+
+                //if (completedRecordReview.RecordReview.CaseName != "Zantac Pharmaceutical Use")
+                //{
+                //    var completeAudit = await AuditCompleteReview(completedRecordReview);
+                //    if (completeAudit != null)
+                //    {
+                //        completeAuditReports.Add(completeAudit);
+                //    }
+                //}
+
             }
 
-            WriteReport(incompleteAudits, completeAuditReports);
+            await WriteReport(incompleteAudits, completeAuditReports);
         }
 
         private List<MedicalRecord> ParseCSVForMedialRecords()
@@ -87,7 +105,7 @@ namespace Laboratory
                 // Don't throw an exception if a CSV line has fewer fields than the header record
                 MissingFieldFound = null
             };
-            using (var reader = new StreamReader("sigmaReport.csv"))
+            using (var reader = new StreamReader("sigmaReport1213.csv"))
             using (var csv = new CsvReader(reader, config))
             {
                 // Get the records and map them to your custom object
@@ -98,35 +116,39 @@ namespace Laboratory
 
         private async Task<List<RecordReview>> GetRecordReviewsFromPostgres() 
         {
-
+            _logger.LogInformation("Connecting To DB");
             var connectionString = DBConnectionString;
             using var connection = new NpgsqlConnection(connectionString);
             await connection.OpenAsync();
-            using var command = new NpgsqlCommand("SELECT * FROM \"RecordReviews\"", connection);
+            using var command = new NpgsqlCommand("SELECT * FROM \"RecordReviews\" WHERE \"ArcherId\" IS NOT NULL ", connection);
             using (var reader = command.ExecuteReader())
             {
                 List<RecordReview> recordReviews = new List<RecordReview>();
-
+                _logger.LogInformation("Reading Data From DB");
+                var count = 0;
                 while (reader.Read())
                 {
+                    _logger.LogInformation($"Reading Record Review {count}");
+                    count++;
                     recordReviews.Add(new RecordReview
                     {
                         Id = reader.GetGuid(0),
                         MatterId = reader.GetString(1),
                         InjuredPartyId = reader.GetString(2),
-                        ReviewDetails = reader.GetString(3),
                         StatusId = reader.GetInt32(4),
-                        Error = reader.GetString(5),
                         Updated = reader.GetDateTime(6),
                         SalesforceId = reader.GetString(7),
                         ArcherId = reader.GetInt32(8),
                         CaseName = reader.GetString(9),
                         Created = reader.GetDateTime(10),
                         INjuredPartyname = reader.GetString(11),
-                        DocumentReviewId = reader.GetGuid(12),
-                        MedicalRecordIds = reader.GetString(13),
+                        MedicalRecordIds = reader.IsDBNull(13)? null :  reader.GetString(13),
                     });
                 }
+                _logger.LogInformation("Data Read From DB");
+
+                await reader.CloseAsync();
+                await connection.CloseAsync();
 
                 return recordReviews;
             }
@@ -135,8 +157,13 @@ namespace Laboratory
         private List<ArcherAudit> MapArcherAudits(List<RecordReview> recordReviews, List<MedicalRecord> medicalRecords)
         {
             var archerAudits = new List<ArcherAudit>();
+            var count = 0;
+            var totalCount = recordReviews.Count;
             foreach(var recordReview in recordReviews)
             {
+                _logger.LogInformation($"Mapping Archer Audit {count} of {totalCount}");
+                count++;
+
                 var medicalRecordsForMatter = medicalRecords.Where(x => x.MatterId == recordReview.MatterId).ToList();
                 var audit = new ArcherAudit(recordReview, medicalRecordsForMatter);
                 audit.SetMedicalRecordIds();
@@ -152,7 +179,7 @@ namespace Laboratory
             var completedFiles = completedRecordReview.MedicalRecords.Where(x => x.FileName.Contains("Review Complete")).Select(x => x.FileInfoId).ToList();
             var notCompletedFiles = completedRecordReview.MedicalRecords.Where(x => !x.FileName.Contains("Review Complete")).Select(x => x.FileInfoId).ToList();
 
-
+            var trackedMedicalRecords = completedRecordReview.MedicalRecordIdsFromPostgres.Count;
             //Get BookmarkHighlightedFiles
 
             var bmhlFiles = completedRecordReview.MedicalRecords.Where(x => x.FileName.Contains("BMHL")).Select(x => x.FileInfoId).ToList();
@@ -164,7 +191,9 @@ namespace Laboratory
                 NumberOfBMHLFiles = bmhlFiles.Count,
                 MedicalRecordIds = completedRecordReview.MedicalRecords.Select(x=> x.MedicalReviewId).ToList(),
                 BookmarkHighlightedFiles = bmhlFiles,
-                BMHLFilesExist = bmhlFiles.Any()
+                BMHLFilesExist = bmhlFiles.Any(),
+                NumberOfRecordsTrackedByPostgres = trackedMedicalRecords,
+                CaseName = completedRecordReview.RecordReview.CaseName
             };
 
             return completeAudit;
@@ -175,13 +204,16 @@ namespace Laboratory
 
             //Check if all files are in review
 
-            var medicalRecordIdsNotInReview = incompleteRecordReview.MedicalRecords.Where(x => x.FileInfoStatus != "In Review" && x.DocumentCreatedDate > incompleteRecordReview.RecordReviewCreatedDate).Select(x => x.FileInfoId).ToList();
+            var validMedicalRecords = incompleteRecordReview.MedicalRecords.Where(x => incompleteRecordReview?.RecordReviewCreatedDate > x?.DocumentCreatedDate).ToList();
+
+            var medicalRecordIdsNotInReview = validMedicalRecords.Where(x => x?.FileInfoStatus != "In Review").Select(x => x.FileInfoId).ToList();
 
             //Check if all files are tracked in PostgreSQL
 
             var medicalRecordIdsNotInPostgres = incompleteRecordReview.MedicalRecordIdsFromSigma.Except(incompleteRecordReview.MedicalRecordIdsFromPostgres).ToList();
 
-            if(!medicalRecordIdsNotInReview.Any() && !medicalRecordIdsNotInPostgres.Any())
+
+            if (!medicalRecordIdsNotInReview.Any() && !medicalRecordIdsNotInPostgres.Any())
             {
                 return null;
             }
@@ -190,7 +222,14 @@ namespace Laboratory
             {
                 MatterId = incompleteRecordReview.MatterId,
                 MedicalRecordIdsMissingInPostgres = medicalRecordIdsNotInPostgres,
-                MedicalRecordIdsUpdatedToCorrectStatus = medicalRecordIdsNotInReview
+                MedicalRecordIdsUpdatedToCorrectStatus = medicalRecordIdsNotInReview,
+                MedicalRecordsAreMissingInPostgres = medicalRecordIdsNotInPostgres.Any(),
+                DocrioMedRecordsNotInCorrectStatus = medicalRecordIdsNotInReview.Any(),
+                MedicalReviewCreatedDate = incompleteRecordReview.RecordReviewCreatedDate,
+                MissingMedicalRecordsInPostgresCount = medicalRecordIdsNotInPostgres.Count,
+                TotalMedicalRecordsInPostgres = incompleteRecordReview.MedicalRecordIdsFromPostgres.Count,
+                WrongStatusMedicalRecordsCount = medicalRecordIdsNotInReview.Count,
+                CaseName = incompleteRecordReview.RecordReview.CaseName
             };
 
             if (medicalRecordIdsNotInReview.Any())
@@ -199,7 +238,15 @@ namespace Laboratory
                 foreach (var medicalRecordId in medicalRecordIdsNotInReview)
                 {
                     //await UpdateFileInfo()
-                    await UpdateFileInfo(medicalRecordId);
+                    try
+                    {
+                        await UpdateFileInfo(medicalRecordId);
+
+                    }
+                    catch(Exception ex)
+                    {
+                        Console.WriteLine(ex.Message);
+                    }
                 }
             }
 
@@ -207,7 +254,8 @@ namespace Laboratory
             {
                 ////Update Postgres
                 incompleteRecordReview.RecordReview.AppendMedicalRecordIds(medicalRecordIdsNotInPostgres);
-                await UpdatPostgres(incompleteRecordReview.RecordReview);
+                incompleteRecordReview.RecordReview.RemoveDuplicateMedicalRecordIds();
+                await UpdatePostgres(incompleteRecordReview.RecordReview);
             }
 
             return incompleteAudit;
@@ -215,6 +263,9 @@ namespace Laboratory
 
         private async Task UpdateFileInfo(string medicalRecordId)
         {
+            var bearerToken = "00D4W0000090Y1x!AQEAQAINlLf_RiA7zwueA.Qo3Rx9arU1nZfDCaiavVQwiXGKzl9hm9JGPxETJGaGm.y.NW5y5Uj7JHoejfQM4lYGODqykg75";
+
+            _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", bearerToken);
             var response = await _httpClient.PatchAsJsonAsync(
                 $"{BaseUri}{FileInfoPath}/{medicalRecordId}",
                 new UpdateFileInfo(),
@@ -232,49 +283,63 @@ namespace Laboratory
             }
         }
 
-        private async Task UpdatPostgres(RecordReview recordReview)
+        private async Task UpdatePostgres(RecordReview recordReview)
         {
             var connectionString = DBConnectionString;
             using var connection = new NpgsqlConnection(connectionString);
+            await connection.OpenAsync();
             var query = $"UPDATE \"RecordReviews\" SET \"MedicalRecordIds\" = '{recordReview.MedicalRecordIds}' WHERE \"Id\" = '{recordReview.Id}'";
             using var command = new NpgsqlCommand(query, connection);
             await command.ExecuteNonQueryAsync();
+            await connection.CloseAsync();
         }
 
-        private void WriteReport(List<IncompleteAuditReport> incompleteAudits, List<CompleteAuditReport> completeAuditReports)
+        private async Task WriteReport(List<IncompleteAuditReport> incompleteAudits, List<CompleteAuditReport> completeAuditReports)
         {
             //Write to CSV
-            WriteIncompleteAuditReport(incompleteAudits);
-            WriteCompleteAuditReport(completeAuditReports); 
+
+            try
+            {
+                await WriteIncompleteAuditReport(incompleteAudits);
+                await WriteCompleteAuditReport(completeAuditReports);
+            }
+            catch(Exception ex)
+            {
+                Console.WriteLine(ex.Message);
+            }
+
         }
 
-        private async void WriteIncompleteAuditReport(List<IncompleteAuditReport> incompleteAudits)
+        private async Task WriteIncompleteAuditReport(List<IncompleteAuditReport> incompleteAudits)
         {
             //Write to CSV
             var csv = new StringBuilder();
-            csv.AppendLine("MatterId,MedicalRecordIdsMissingInPostgres,MedicalRecordIdsUpdatedToCorrectStatus");
+
+
+            csv.AppendLine("Matterid, Postgres Missing Documents, Medical Records Missing in Postgres, Medical Records Missing in Postgres Count, Total Medical Records in Postgres, Medical Records Are set to Incorrect Status, Medical Records Updated to Correct Status,  Wrong Status Medical Records Count, Medical Review Created Date, Case Name");
+
             foreach(var audit in incompleteAudits)
             {
-                var line = $"{audit.MatterId},{string.Join(",", audit.MedicalRecordIdsMissingInPostgres)},{string.Join(",", audit.MedicalRecordIdsUpdatedToCorrectStatus)}";
-                csv.AppendLine(line);
+                csv.AppendLine($"{audit.MatterId}, {audit.MedicalRecordsAreMissingInPostgres}, { string.Join("|", audit.MedicalRecordIdsMissingInPostgres)}, {audit.MissingMedicalRecordsInPostgresCount}, {audit.TotalMedicalRecordsInPostgres},  {audit.MedicalRecordIdsUpdatedToCorrectStatus}, { string.Join("|", audit.MedicalRecordIdsUpdatedToCorrectStatus)}, {audit.WrongStatusMedicalRecordsCount}, {audit.MedicalReviewCreatedDate}, {audit.CaseName} ");
             }
             await File.WriteAllTextAsync("IncompleteAuditReport.csv", csv.ToString());
             Console.WriteLine("Incomplete Reviews Audit has been created.");
 
         }
 
-        private async void WriteCompleteAuditReport(List<CompleteAuditReport> completeAuditReports)
+        private async Task WriteCompleteAuditReport(List<CompleteAuditReport> completeAuditReports)
         {
             //Write to CSV
             var csv = new StringBuilder();
-            csv.AppendLine("MatterId,NumberOfMedicalRecords,NumberOfBMHLFiles,MedicalRecordIds,BookmarkHighlightedFiles,BMHLFilesExist");
+            csv.AppendLine("Matter Id,Number Of Medical Records,Number Of BMHL Files,Medical Record Ids,Bookmark Highlighted Files,BMHL Files Exist,Number of Med Ids tracked by Postgres, Case Name");
             foreach (var audit in completeAuditReports)
             {
-                var line = $"{audit.MatterId},{audit.NumberOfMedicalRecords},{audit.NumberOfBMHLFiles},{string.Join(",", audit.MedicalRecordIds)},{string.Join(",", audit.BookmarkHighlightedFiles)},{audit.BMHLFilesExist}";
+                var line = $"{audit.MatterId},{audit.NumberOfMedicalRecords},{audit.NumberOfBMHLFiles},{string.Join("|", audit.MedicalRecordIds)},{string.Join("|", audit.BookmarkHighlightedFiles)},{audit.BMHLFilesExist}, {audit.NumberOfRecordsTrackedByPostgres}, {audit.CaseName}";
                 csv.AppendLine(line);
             }
 
             await File.WriteAllTextAsync("CompleteAuditReport.csv", csv.ToString());
+
             Console.WriteLine("Complete Reviews Audit has been created.");
         }
     }

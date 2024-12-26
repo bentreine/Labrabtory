@@ -463,5 +463,5 @@ public record RagicConfiguration(string SheetName,
     string InjuredPartyLastNameQuestionId, 
     string InjuredPartyBirthDayQuestionId,
     string InjuredPartyDateOfDeathQuestionId);
-}
+
 

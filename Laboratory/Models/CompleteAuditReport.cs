@@ -12,6 +12,9 @@
 
         public bool BMHLFilesExist { get; set; }
 
+        public int NumberOfRecordsTrackedByPostgres { get; set; }
+
+        public string CaseName { get; set; }
 
     }
 }

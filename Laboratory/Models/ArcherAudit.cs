@@ -19,7 +19,7 @@ namespace Laboratory.Models
 
         public List<string> MedicalRecordIdsFromSigma { get; private set; }
 
-        public List<string> MedicalRecordIdsFromPostgres { get; private set }
+        public List<string> MedicalRecordIdsFromPostgres { get; private set; }
         public ArcherAudit(RecordReview review, List<MedicalRecord> medicalRecords)
         {
             RecordReview = review;
@@ -38,6 +38,10 @@ namespace Laboratory.Models
             {
                 MedicalRecordIdsFromPostgres = JsonSerializer.Deserialize<List<string>>(RecordReview.MedicalRecordIds);
             }
+            else
+            {
+                MedicalRecordIdsFromPostgres = new List<string>();
+            }
         }
     }
 
@@ -47,18 +51,16 @@ namespace Laboratory.Models
         public Guid Id { get; set; }
         public string MatterId { get; set; }
         public string InjuredPartyId { get; set; }
-        public string ReviewDetails { get; set; }
+        public string? ReviewDetails { get; set; }
         //Have to map this correclty
         public int StatusId { get; set; }
-        public string Error { get; set; }
         public DateTime Updated { get; set; }
         public string SalesforceId { get; set; }
         public int ArcherId { get; set; }
         public string CaseName { get; set; }
         public DateTime Created { get; set; }
         public string INjuredPartyname { get; set; } 
-        public Guid DocumentReviewId { get; set; } 
-        public string MedicalRecordIds { get; set; }
+        public string? MedicalRecordIds { get; set; }
 
 
         public virtual void AppendMedicalRecordIds(List<string> recordIds)
@@ -73,6 +75,18 @@ namespace Laboratory.Models
                 initialList.AddRange(recordIds);
                 MedicalRecordIds = JsonSerializer.Serialize(initialList);
             }
+        }
+
+        public virtual void RemoveDuplicateMedicalRecordIds()
+        {
+            if (string.IsNullOrEmpty(MedicalRecordIds))
+            {
+                return;
+            }
+
+            var recordIds = JsonSerializer.Deserialize<List<string>>(MedicalRecordIds);
+            var distinctRecordIds = recordIds.Distinct().ToList();
+            MedicalRecordIds = JsonSerializer.Serialize(distinctRecordIds);
         }
 
         public virtual void SetMedicalRecordIds(List<string> recordIds)
@@ -96,7 +110,7 @@ namespace Laboratory.Models
         public string LastModifiedBy { get; set; }
         public string Owner { get; set; }
         public string CaseName { get; set; }
-        public string CliamType { get; set; }   
+        public string ClaimType { get; set; }   
         public string Client { get; set; }
         public string InjuredParty { get; set; }
         public string MedicalReviewId { get; set; }
