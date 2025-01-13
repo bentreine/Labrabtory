@@ -17,17 +17,22 @@ public class DocrioClient(
     private readonly ILogger<DocrioClient> _logger = logger;
     private readonly DocrioClientOptions _options = options.Value;
 
+
+
     public async Task<Dictionary<string, Uri>> GetDocumentUrls(
     List<string> ids,
     CancellationToken cancellationToken = default)
     {
         var query = HttpUtility.ParseQueryString(string.Empty);
-
-        var bearerToken = "TodoRealToken";
+        var bearerToken = "BearerToken";
         var baseUrl = "https://api.990483905850.genesisapi.com/v1";
         query["Ids"] = string.Join(",", ids);
-        _httpClient.DefaultRequestHeaders.Add("Authorization", $"Bearer {bearerToken}");
-        var response = await _httpClient.GetAsync($"{baseUrl}/files?{query}");
+
+        
+        var request = new HttpRequestMessage(HttpMethod.Get, $"{baseUrl}/files?{query}");
+        request.Headers.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", bearerToken);
+
+        var response = await _httpClient.SendAsync(request);
 
         if (!response.IsSuccessStatusCode)
         {

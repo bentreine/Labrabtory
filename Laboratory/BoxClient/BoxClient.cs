@@ -2,6 +2,7 @@ using System.Collections.Concurrent;
 using Box.Sdk.Gen;
 using Box.Sdk.Gen.Managers;
 using Box.Sdk.Gen.Schemas;
+using Box.V2.Config;
 using Laboratory;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
@@ -26,8 +27,13 @@ public class BoxClient : IBoxClient
         _logger = logger;
 
         //Set Developer Token
-        var developerToken = "ToDOGetDeveloperToken";
-        var auth = new BoxDeveloperTokenAuth(token: developerToken);
+
+        var clientId = "id";
+        var clientSecret = "secret";
+
+        var config = new CcgConfig(clientId, clientSecret);
+        var auth = new BoxCcgAuth(config).WithEnterpriseSubject("1158697473");
+  
         _adminGenClient = new Box.Sdk.Gen.BoxClient(auth: auth);
     }
 
@@ -46,46 +52,28 @@ public class BoxClient : IBoxClient
         List<(string TempFilePath, string SalesforceDocumentId)> filePaths,
         bool isAdditional = false)
     {
-        var matterFolderId = "269800924207"; //CLJ ATTN ARCHER FolderId
-        await UploadNewFiles(matterId, injuredPartyName, filePaths, matterFolderId);
+
+
+
+        var rootFolderId = caseName switch
+        {
+            "Camp Lejeune Exposure" => "269800924207", //CLJ ATTN ARCHER FolderId
+            "NEC Infant Formula" => "237429954143", //CLJ ATTN ARCHER FolderId
+            "Zantac Pharmaceutical Use" => "262527700318", //CLJ ATTN ARCHER FolderId
+        };
+
+        var folderName = $"{injuredPartyName} - {matterId}";
+
+        var folderId = await GetFolderId(rootFolderId, folderName, cacheFolderId: false, createFolder: true);
+
+        await UploadNewFiles(matterId, injuredPartyName, filePaths, folderId);
     }
 
-    #region Private Helpers
-    /// <summary>
-    /// Gets the root folder id for a given case name. If the
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Thrown when the folder is not found</exception>
-    /// <returns></returns>
-    private async Task<string> GetCaseFolderId(string caseName)
-    {
-        //TODO If I'm uploading more than just CLJ files. I need to change this to be more dynamic
-        return await GetFolderId(_rootFolderId, caseName, cacheFolderId: true, createFolder: false);
-    }
-
-    /// <summary>
-    /// Gets the folder id for the Attention Archer folder
-    /// </summary>
-    /// <exception cref="InvalidOperationException">Thrown when the folder is not found</exception>
-    private async Task<string> GetAttentionArcherFolderId(string caseName)
-    {
-        var caseFolderId = await GetCaseFolderId(caseName);
-        return await GetFolderId(caseFolderId, AttentionArcherFolderName, cacheFolderId: true, createFolder: false);
-    }
-
-    /// <summary>
-    /// Get's a folder id for a given folder name.
-    /// </summary>
-    /// <param name="rootFolderId">The parent folder to search through</param>
-    /// <param name="folderName">The folder name to search for</param>
-    /// <param name="cacheFolderId">If true, will cache the folder id so future queries do not hit the Box API</param>
-    /// <param name="createFolder">If true, will create the folder if it isn't found</param>
-    /// <exception cref="InvalidOperationException">Thrown when the folder is not found and createFolder is false</exception>
-    /// <returns>The Folder id</returns>
     private async Task<string> GetFolderId(
-        string rootFolderId,
-        string folderName,
-        bool cacheFolderId = false,
-        bool createFolder = false)
+    string rootFolderId,
+    string folderName,
+    bool cacheFolderId = false,
+    bool createFolder = false)
     {
         // Return cache item, if possible
         if (_folderCache.ContainsKey($"{rootFolderId}:{folderName}"))
@@ -147,14 +135,7 @@ public class BoxClient : IBoxClient
         return targetFolder.FolderMini!.Id;
     }
 
-    private async Task<string> GetMatterFolder(string caseName, string matterId, string injuredPartyName, bool isAdditional = false)
-    {
-        var attentionArcherFolderId = await GetAttentionArcherFolderId(caseName);
-        var folderName = isAdditional ? $"{injuredPartyName} - {matterId} addl" : $"{injuredPartyName} - {matterId}";
-        var matterFolderId = await GetFolderId(attentionArcherFolderId, folderName, createFolder: true);
-        return matterFolderId;
-    }
-
+    #region Private Helpers
     /// <summary>
     /// Uploads a file to a folder in Box. For large files, this method will use a session upload for better performance.
     /// </summary>
@@ -199,8 +180,8 @@ public class BoxClient : IBoxClient
     {
         var distinctFiles = files.Distinct();
         var filesToUpload = distinctFiles.Select(file => 
-            (FolderId: matterFolderId, 
-            FileName: $"{injuredPartyName}_{matterId}_{file.SalesforceDocumentId}", 
+            (FolderId: matterFolderId,
+            FileName: $"{injuredPartyName}_{matterId}_{file.SalesforceDocumentId}{Path.GetExtension(file.TempFilePath)}",
             FilePath: file.TempFilePath));
         await Parallel.ForEachAsync(filesToUpload, async (file, _) => await UploadFileToFolder(file));
     }

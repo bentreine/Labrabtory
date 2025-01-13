@@ -27,22 +27,25 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddScoped<IDocrioClient, DocrioClient>();
         services.AddTransient<IFileSystem, FileSystem>();
         services.AddScoped<ReuploadBoxFiles>();
+        services.AddScoped<PdfMerger>();
 
     })
     .Build();
 
 host.Start();
 
-var service = host.Services.GetRequiredService<RagicUtility>();
-var metaService = host.Services.GetRequiredService<RecordReviewMetatdataUtility>();
-var weeklyAuditService = host.Services.GetRequiredService<WeeklyArcherAudit>();
-var reuploadService = host.Services.GetRequiredService<ReuploadBoxFiles>();
-
+//var service = host.Services.GetRequiredService<RagicUtility>();
+//var metaService = host.Services.GetRequiredService<RecordReviewMetatdataUtility>();
+//var weeklyAuditService = host.Services.GetRequiredService<WeeklyArcherAudit>();
+//var reuploadService = host.Services.GetRequiredService<ReuploadBoxFiles>();
+var pdfMerger = host.Services.GetRequiredService<PdfMerger>();
 
 
 //Select Job To Run
 
-await reuploadService.ReuploadFiles();
+pdfMerger.StichPdfs();
+
+//await reuploadService.ReuploadFiles();
 
 //await weeklyAuditService.RunWeeklyArcherAudit();
 
