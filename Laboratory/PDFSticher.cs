@@ -49,7 +49,6 @@ public class PdfMerger
                     {
                         currentpage++;
                         PdfPage page = inputDocument.Pages[i];
-                        page.Size = size;
                         outputDocument.AddPage(page);
                         //List csv logic
                     }

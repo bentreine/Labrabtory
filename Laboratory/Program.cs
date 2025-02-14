@@ -1,6 +1,7 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using KellerPostman.MedicalRecords.Infrastructure.BoxWrapper;
 using Laboratory;
+using Laboratory.CaseWorksFHIRAudit;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -28,7 +29,7 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddTransient<IFileSystem, FileSystem>();
         services.AddScoped<ReuploadBoxFiles>();
         services.AddScoped<PdfMerger>();
-
+        services.AddScoped<CaseWorksFHIRAudit>();
     })
     .Build();
 
@@ -39,11 +40,11 @@ host.Start();
 //var weeklyAuditService = host.Services.GetRequiredService<WeeklyArcherAudit>();
 //var reuploadService = host.Services.GetRequiredService<ReuploadBoxFiles>();
 var pdfMerger = host.Services.GetRequiredService<PdfMerger>();
-
+var CaseWorksAuditReport = host.Services.GetRequiredService<CaseWorksFHIRAudit>();
 
 //Select Job To Run
 
-pdfMerger.StichPdfs();
+//pdfMerger.StichPdfs();
 
 //await reuploadService.ReuploadFiles();
 
@@ -54,3 +55,5 @@ pdfMerger.StichPdfs();
 //await metaService.AuditArcher();
 
 //await service.UpdateClientInformationOnRagic();
+
+CaseWorksAuditReport.AuditCaseWorkFHIRFiles();
