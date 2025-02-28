@@ -42,8 +42,8 @@ public class DataVantScriptWriter
            ,'{facility.Phone}'
            ,'{facility.Fax}'
            ,'Datavant'
-           ,'{textInfo.ToTitleCase(facility.Address)}'
-           ,'{textInfo.ToTitleCase(facility.Address2)}'
+           ,'{facility.Address}'
+           ,'{facility.Address2}'
            );";
 
             scriptCSV.AppendLine(script);
