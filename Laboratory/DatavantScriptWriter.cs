@@ -11,8 +11,10 @@ public class DataVantScriptWriter
 
         var scriptCSV = new StringBuilder();
         foreach (var facility in facilities)
+        
         {
-            var combinedAddress = string.Join(", ", facility.Address, facility.Address2).ToTileCase();
+            TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
+            var combinedAddress = textInfo.ToTitleCase( string.Join(", ", facility.Address, facility.Address2));
             var guid = Guid.NewGuid();
             string script = $@"
             INSERT INTO public.""Facilities""
@@ -32,16 +34,16 @@ public class DataVantScriptWriter
             VALUES
            ('{guid}' 
            ,'{guid}'
-           ,'{facility.SiteName.ToTileCase()}'
-           ,'{combinedAddress.ToTileCase()}'
+           ,'{textInfo.ToTitleCase(facility.SiteName)}'
+           ,'{combinedAddress}'
            ,'{facility.City}'
            ,'{facility.State}'
            ,'{facility.Zip}'
            ,'{facility.Phone}'
            ,'{facility.Fax}'
            ,'Datavant'
-           ,'{facility.Address}'
-           ,'{facility.Address2}'
+           ,'{textInfo.ToTitleCase(facility.Address)}'
+           ,'{textInfo.ToTitleCase(facility.Address2)}'
            );";
 
             scriptCSV.AppendLine(script);
