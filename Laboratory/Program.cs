@@ -56,4 +56,7 @@ var CaseWorksAuditReport = host.Services.GetRequiredService<CaseWorksFHIRAudit>(
 
 //await service.UpdateClientInformationOnRagic();
 
-CaseWorksAuditReport.AuditCaseWorkFHIRFiles();
+//CaseWorksAuditReport.AuditCaseWorkFHIRFiles();
+
+var DataVantScriptWriter = new DataVantScriptWriter();
+DataVantScriptWriter.WriteScripts();
