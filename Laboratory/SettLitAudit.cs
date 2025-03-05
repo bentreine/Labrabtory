@@ -83,7 +83,7 @@ public class SettLitAudit
     {
         // Call the API to get the data
         var request = new HttpRequestMessage(HttpMethod.Get, $"https://settlit.marbleapi.com/external/query/{vendorRequestId}");
-        request.Headers.Add("api-key", "wufojhdfgasfda12blBLp0jLSDFh934--fL3GHTDbp08lcS0O94xK");
+        request.Headers.Add("api-key", "");
         request.Headers.Add("accept", "application/json");
 
         var response = await _httpClient.SendAsync(request);

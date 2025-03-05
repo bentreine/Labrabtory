@@ -263,7 +263,7 @@ namespace Laboratory
 
         private async Task UpdateFileInfo(string medicalRecordId)
         {
-            var bearerToken = "00D4W0000090Y1x!AQEAQAINlLf_RiA7zwueA.Qo3Rx9arU1nZfDCaiavVQwiXGKzl9hm9JGPxETJGaGm.y.NW5y5Uj7JHoejfQM4lYGODqykg75";
+            var bearerToken = "";
 
             _httpClient.DefaultRequestHeaders.Authorization = new System.Net.Http.Headers.AuthenticationHeaderValue("Bearer", bearerToken);
             var response = await _httpClient.PatchAsJsonAsync(
