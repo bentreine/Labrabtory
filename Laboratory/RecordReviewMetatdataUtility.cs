@@ -21,7 +21,7 @@ namespace Laboratory
     public class RecordReviewMetatdataUtility
     {
 
-        static string DBConnectionString = "Server=kp-core-psql-prod.postgres.database.azure.com;Database=medicalrecordsdb;User Id=kpsqladmin;Password=b6Nm]oQgu*x};";
+        static string DBConnectionString = "";
         private readonly HttpClient _httpClient;
         private readonly string BaseUri = "https://kellerlenkner2.my.salesforce.com";
         private readonly string FileInfoPath = "/services/data/v60.0/sobjects/litify_docs__File_Info__c";
