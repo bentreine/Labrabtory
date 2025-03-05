@@ -14,7 +14,7 @@ public class DataVantScriptWriter
         
         {
             TextInfo textInfo = CultureInfo.CurrentCulture.TextInfo;
-            var combinedAddress = textInfo.ToTitleCase( string.Join(", ", facility.Address, facility.Address2));
+            var combinedAddress = textInfo.ToTitleCase(string.Join(", ", facility.Address.ToLower(), facility.Address2.ToLower()));
             var guid = Guid.NewGuid();
             string script = $@"
             INSERT INTO public.""Facilities""
@@ -34,9 +34,9 @@ public class DataVantScriptWriter
             VALUES
            ('{guid}' 
            ,'{guid}'
-           ,'{textInfo.ToTitleCase(facility.SiteName)}'
+           ,'{textInfo.ToTitleCase(facility.SiteName.ToLower())}'
            ,'{combinedAddress}'
-           ,'{facility.City}'
+           ,'{textInfo.ToTitleCase(facility.City.ToLower())}'
            ,'{facility.State}'
            ,'{facility.Zip}'
            ,'{facility.Phone}'

@@ -30,6 +30,8 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddScoped<ReuploadBoxFiles>();
         services.AddScoped<PdfMerger>();
         services.AddScoped<CaseWorksFHIRAudit>();
+        services.AddScoped<DataVantScriptWriter>();
+        services.AddScoped<SettLitAudit>();
     })
     .Build();
 
@@ -41,6 +43,8 @@ host.Start();
 //var reuploadService = host.Services.GetRequiredService<ReuploadBoxFiles>();
 var pdfMerger = host.Services.GetRequiredService<PdfMerger>();
 var CaseWorksAuditReport = host.Services.GetRequiredService<CaseWorksFHIRAudit>();
+var SettLitAudit = host.Services.GetRequiredService<SettLitAudit>();
+var DataVantScriptWriter = new DataVantScriptWriter();
 
 //Select Job To Run
 
@@ -58,5 +62,6 @@ var CaseWorksAuditReport = host.Services.GetRequiredService<CaseWorksFHIRAudit>(
 
 //CaseWorksAuditReport.AuditCaseWorkFHIRFiles();
 
-var DataVantScriptWriter = new DataVantScriptWriter();
-DataVantScriptWriter.WriteScripts();
+//DataVantScriptWriter.WriteScripts();
+
+await SettLitAudit.AuditSettLit();

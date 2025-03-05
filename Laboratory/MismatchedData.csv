@@ -1,0 +1,66 @@
+MatterId, Expected Status (In Postgres), Actual Status (From SettLit)
+a0LNw000007FMFVMA4, Pending, Completed
+a0LNw000007FtD3MAK, Pending, Completed
+a0L4W00000nXmOyUAK, Pending, Processing
+a0L4W00000nXzfQUAS, Pending, Processing
+a0LNw000007AlKzMAK, Pending, Completed
+a0LNw000007fedNMAQ, Pending, Completed
+a0LNw000007wVx3MAE, Pending, Completed
+a0L4W00000nYmbGUAS, Pending, Processing
+a0LNw000008KVuHMAW, Incomplete Profile, Pending
+a0L4W00000mO30aUAC, Pending, Processing
+a0LNw000007sA6VMAU, Pending, Completed
+a0LNw000007ayBJMAY, Pending, Completed
+a0LNw000007z6u5MAA, Pending, Completed
+a0LNw000007q393MAA, Pending, Completed
+a0LNw00000824EDMAY, Pending, Completed
+a0LNw000008sNXhMAM, Incomplete Profile, Pending
+a0LNw0000087sofMAA, Pending, Completed
+a0LNw000007DoKoMAK, Pending, Completed
+a0LNw0000087RrhMAE, Pending, Completed
+a0L4W00000nYCL4UAO, Pending, Processing
+a0LNw000008OXavMAG, Incomplete Profile, Pending
+a0LNw0000080rkTMAQ, Pending, Completed
+a0LNw0000081oB3MAI, Pending, Completed
+a0LNw000007s8MqMAI, Pending, Completed
+a0LNw000008NgWeMAK, Incomplete Profile, Pending
+a0LNw0000008PSfMAM, Pending, 
+a0LNw000008Vs4LMAS, Incomplete Profile, Pending
+a0LNw000007BCeXMAW, Pending, Completed
+a0LNw000007n9FqMAI, Pending, Completed
+a0LNw000007vvITMAY, Pending, Completed
+a0LNw0000082xHAMAY, Pending, Completed
+a0LNw000007qWm9MAE, Pending, Completed
+a0L4W00000n88q8UAA, Pending, Processing
+a0LNw000008nYNJMA2, Incomplete Profile, Pending
+a0LNw000007FJEVMA4, Pending, Completed
+a0L4W00000nY6OLUA0, Pending, Processing
+a0LNw000007WGnBMAW, Pending, Completed
+a0LNw000007O0CXMA0, Pending, Completed
+a0LNw000007TaCCMA0, Pending, Completed
+a0LNw000007kuuPMAQ, Pending, Completed
+a0LNw0000087j3pMAA, Pending, Completed
+a0LNw000007tWL5MAM, Pending, Completed
+a0L4W00000nYmdvUAC, Pending, Processing
+a0LNw000008KPYjMAO, Incomplete Profile, Pending
+a0LNw000007k9U5MAI, Pending, Completed
+a0LNw000007ftnhMAA, Pending, Completed
+a0LNw000008MvnpMAC, Incomplete Profile, Pending
+a0LNw000007RG3AMAW, Pending, Completed
+a0LNw0000081mUGMAY, Pending, Completed
+a0LNw000007K6oPMAS, Pending, Completed
+a0LNw0000087bRFMAY, Data Export Completed, Completed
+a0LNw000007XbBFMA0, Pending, Completed
+a0L4W00000nXv81UAC, Pending, Processing
+a0LNw000008Dg04MAC, Incomplete Profile, Pending
+a0LNw000008PaZxMAK, Incomplete Profile, Pending
+a0LNw000007d0k5MAA, Pending, Completed
+a0LNw000007PsPTMA0, Pending, Completed
+a0L4W00000nXq4vUAC, Pending, Processing
+a0LNw000007fyaTMAQ, Pending, Completed
+a0LNw000007rY2mMAE, Pending, Completed
+a0LNw000007AE8yMAG, Pending, 
+a0LNw000007nh4bMAA, Pending, Completed
+a0L4W00000nYmV3UAK, Pending, Processing
+a0LNw000007Pb3ZMAS, Pending, Completed
+a0LNw000007FIdJMAW, Pending, Completed
