@@ -1,6 +1,7 @@
 using System.Globalization;
 using System.Text;
 using System.Text.Json.Serialization;
+using Box.Sdk.Gen.Internal;
 using CsvHelper;
 using CsvHelper.Configuration;
 using Newtonsoft.Json;
@@ -15,7 +16,6 @@ public class SettLitAudit
     {
         _httpClient = httpClient;
     }
-
 
     public async Task AuditSettLit()
     {
@@ -38,15 +38,30 @@ public class SettLitAudit
                 Console.WriteLine("Mismatched Data found");
                 mismatchedData.AppendLine($"{settLitRequest.MatterId}, {status}, {settLitData.QueryStatus}");
                 mismatchedCount++;
-                await SendToMedRecords(new SettLiTWebhookRequest(){
+                await SendToMedRecords(new SettLiTWebhookRequest()
+                {
                     EventName = "Query Status Updated",
-                    ClientId = settLitRequest.MatterId,
+                    ClientId = settLitRequest.VendorRequestId,
                     ClientStatus = settLitData.ClientStatus,
                     QueryStatus = settLitData.QueryStatus,
                     EnricherStatus = settLitData.EnricherStatus,
-                    DataCount = settLitData.dataCount,
-                    ExportJobId = settLitRequest.VendorRequestId
+                    DataCount = settLitData.dataCount
                 });
+
+                var test = new SettLiTWebhookRequest()
+                {
+                    EventName = "Query Status Updated",
+                    ClientId = settLitRequest.VendorRequestId,
+                    ClientStatus = settLitData.ClientStatus,
+                    QueryStatus = settLitData.QueryStatus,
+                    EnricherStatus = settLitData.EnricherStatus,
+                    DataCount = settLitData.dataCount
+                };
+                var test2 = JsonConvert.SerializeObject(test);
+
+
+                var writeLine = JsonConvert.SerializeObject(settLitData);
+                Console.WriteLine(writeLine);
             }
             else
             {
@@ -55,7 +70,7 @@ public class SettLitAudit
                 matchedCount++;
             }
             //Log Percent complete
-            double completePercentage = ((double) mismatchedCount + (double) matchedCount) * 100.00 / (double) settLitInfo.Count;
+            double completePercentage = ((double)mismatchedCount + (double)matchedCount) * 100.00 / (double)settLitInfo.Count;
             Console.WriteLine($"Percent Complete: {completePercentage}%");
         }
         Console.WriteLine($"Mismatched Data:{mismatchedCount} found of {settLitInfo.Count}");
@@ -71,7 +86,7 @@ public class SettLitAudit
         var content = new StringContent(json, Encoding.UTF8, "application/json");
 
 
-        var response = await _httpClient.PostAsync("https://medrecords.marbleapi.com/external/webhook", content); //TODO Point to Med Records and use Subscription Key
+        var response = await _httpClient.PostAsync("https://api.kellerpostman.com/medicalrecords/api/v1/medical-data-requests/settlit-webhook?subscription-key=4504fad257d04f9cb968fa1ed03a985a", content); //TODO Point to Med Records and use Subscription Key
 
         if (!response.IsSuccessStatusCode)
         {
@@ -83,11 +98,11 @@ public class SettLitAudit
     {
         // Call the API to get the data
         var request = new HttpRequestMessage(HttpMethod.Get, $"https://settlit.marbleapi.com/external/query/{vendorRequestId}");
-        request.Headers.Add("api-key", "");
+        request.Headers.Add("api-key", "wufojhdfgasfda12blBLp0jLSDFh934--fL3GHTDbp08lcS0O94xK");
         request.Headers.Add("accept", "application/json");
 
         var response = await _httpClient.SendAsync(request);
-        
+
         if (!response.IsSuccessStatusCode)
         {
             throw new Exception($"Failed to get data for vendorRequestId: {vendorRequestId}");
@@ -101,42 +116,42 @@ public class SettLitAudit
 
     public class SettLiTWebhookRequest
     {
-    /// <summary>
-    /// "Enricher Status Updated", "Query Status Updated",
-    /// "Data Count Updated", or "Data Export Completed"
-    /// </summary>
-    [JsonPropertyName("eventName")]
-    public required string EventName { get; set; }
+        /// <summary>
+        /// "Enricher Status Updated", "Query Status Updated",
+        /// "Data Count Updated", or "Data Export Completed"
+        /// </summary>
+        [JsonPropertyName("eventName")]
+        public required string EventName { get; set; }
 
-    [JsonPropertyName("clientId")]
-    public required string ClientId { get; set; }
+        [JsonPropertyName("clientId")]
+        public required string ClientId { get; set; }
 
-    /// <summary>
-    /// "Incomplete Profile" or "Complete Profile"
-    /// </summary>
-    [JsonPropertyName("clientStatus")]
-    public string? ClientStatus { get; set; }
+        /// <summary>
+        /// "Incomplete Profile" or "Complete Profile"
+        /// </summary>
+        [JsonPropertyName("clientStatus")]
+        public string? ClientStatus { get; set; }
 
-    /// <summary>
-    /// "Processing", "Completed No Results", or "Completed"
-    /// </summary>
-    [JsonPropertyName("enricherStatus")]
-    public string? EnricherStatus { get; set; }
+        /// <summary>
+        /// "Processing", "Completed No Results", or "Completed"
+        /// </summary>
+        [JsonPropertyName("enricherStatus")]
+        public string? EnricherStatus { get; set; }
 
-    /// <summary>
-    /// "Pending", "Processing", or "Complete"
-    /// </summary>
-    [JsonPropertyName("queryStatus")]
-    public string? QueryStatus { get; set; }
+        /// <summary>
+        /// "Pending", "Processing", or "Complete"
+        /// </summary>
+        [JsonPropertyName("queryStatus")]
+        public string? QueryStatus { get; set; }
 
-    [JsonPropertyName("dataCount")]
-    public int? DataCount { get; set; }
+        [JsonPropertyName("dataCount")]
+        public int? DataCount { get; set; }
 
-    [JsonPropertyName("exportJobId")]
-    public string? ExportJobId { get; set; }
+        [JsonPropertyName("exportJobId")]
+        public string? ExportJobId { get; set; }
 
-    private bool HasResults => DataCount.GetValueOrDefault() > 0;
-}
+        private bool HasResults => DataCount.GetValueOrDefault() > 0;
+    }
 
 
     private string GetStatus(int status)
@@ -176,12 +191,12 @@ public class SettLitAudit
 
     private class SettLitData
     {
-        public string ClientId {get; set;}
-        public string ClientStatus {get; set;}
-        public string EnricherStatus {get; set;}
-        public string QueryStatus {get; set;}
-        public int dataCount {get; set;}
-    
+        public string ClientId { get; set; }
+        public string ClientStatus { get; set; }
+        public string EnricherStatus { get; set; }
+        public string QueryStatus { get; set; }
+        public int dataCount { get; set; }
+
     }
 
     private class SettLitInfo
@@ -196,6 +211,6 @@ public class SettLitAudit
         /// 3 - Completed
         /// 4 - Data Export Completed
         /// </summary>
-        public int Status {get; set;}
+        public int Status { get; set; }
     }
 }

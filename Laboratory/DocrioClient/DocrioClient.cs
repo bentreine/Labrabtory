@@ -5,11 +5,13 @@ using Microsoft.Extensions.Logging;
 using System.Net.Http.Json;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.Extensions.Options;
+using Microsoft.Extensions.Configuration;
 
 public class DocrioClient(
     HttpClient client,
     ILogger<DocrioClient> logger,
-    IOptions<DocrioClientOptions> options)
+    IOptions<DocrioClientOptions> options,
+    IConfiguration configuration)
  : IDocrioClient
 {
 
@@ -24,7 +26,7 @@ public class DocrioClient(
     CancellationToken cancellationToken = default)
     {
         var query = HttpUtility.ParseQueryString(string.Empty);
-        var bearerToken = "BearerToken";
+        var bearerToken = configuration.GetSection("AppSettings")["DocrioBearerToken"];
         var baseUrl = "https://api.990483905850.genesisapi.com/v1";
         query["Ids"] = string.Join(",", ids);
 

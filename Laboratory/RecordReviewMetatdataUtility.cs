@@ -130,20 +130,20 @@ namespace Laboratory
                 {
                     _logger.LogInformation($"Reading Record Review {count}");
                     count++;
-                    recordReviews.Add(new RecordReview
-                    {
-                        Id = reader.GetGuid(0),
-                        MatterId = reader.GetString(1),
-                        InjuredPartyId = reader.GetString(2),
-                        StatusId = reader.GetInt32(4),
-                        Updated = reader.GetDateTime(6),
-                        SalesforceId = reader.GetString(7),
-                        ArcherId = reader.GetInt32(8),
-                        CaseName = reader.GetString(9),
-                        Created = reader.GetDateTime(10),
-                        INjuredPartyname = reader.GetString(11),
-                        MedicalRecordIds = reader.IsDBNull(13)? null :  reader.GetString(13),
-                    });
+                    //recordReviews.Add(new RecordReview
+                    //{
+                    //    Id = reader.GetGuid(0),
+                    //    MatterId = reader.GetString(1),
+                    //    InjuredPartyId = reader.GetString(2),
+                    //    StatusId = reader.GetInt32(4),
+                    //    Updated = reader.GetDateTime(6),
+                    //    SalesforceId = reader.GetString(7),
+                    //    ArcherId = reader.GetInt32(8),
+                    //    CaseName = reader.GetString(9),
+                    //    Created = reader.GetDateTime(10),
+                    //    INjuredPartyname = reader.GetString(11),
+                    //    MedicalRecordIds = reader.IsDBNull(13)? null :  reader.GetString(13),
+                    //});
                 }
                 _logger.LogInformation("Data Read From DB");
 
@@ -165,9 +165,9 @@ namespace Laboratory
                 count++;
 
                 var medicalRecordsForMatter = medicalRecords.Where(x => x.MatterId == recordReview.MatterId).ToList();
-                var audit = new ArcherAudit(recordReview, medicalRecordsForMatter);
-                audit.SetMedicalRecordIds();
-                archerAudits.Add(audit);
+                //var audit = new ArcherAudit(recordReview, medicalRecordsForMatter);
+               // audit.SetMedicalRecordIds();
+                //archerAudits.Add(audit);
             }
             return archerAudits;
         }
@@ -255,7 +255,7 @@ namespace Laboratory
                 ////Update Postgres
                 incompleteRecordReview.RecordReview.AppendMedicalRecordIds(medicalRecordIdsNotInPostgres);
                 incompleteRecordReview.RecordReview.RemoveDuplicateMedicalRecordIds();
-                await UpdatePostgres(incompleteRecordReview.RecordReview);
+              //  await UpdatePostgres(incompleteRecordReview.RecordReview);
             }
 
             return incompleteAudit;

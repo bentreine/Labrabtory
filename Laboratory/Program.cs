@@ -1,7 +1,10 @@
 ﻿// See https://aka.ms/new-console-template for more information
 using KellerPostman.MedicalRecords.Infrastructure.BoxWrapper;
+using KellerPostman.Salesforce.Sdk;
 using Laboratory;
+using Laboratory.ArcherClient;
 using Laboratory.CaseWorksFHIRAudit;
+using Laboratory.SalesforceClient;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
@@ -32,36 +35,29 @@ var host = Host.CreateDefaultBuilder(args)
         services.AddScoped<CaseWorksFHIRAudit>();
         services.AddScoped<DataVantScriptWriter>();
         services.AddScoped<SettLitAudit>();
+        services.AddScoped<ILocalSalesforceClient, LocalSalesforceClient>();
+        services.AddScoped<IArcherClient, ArcherClient>();
+
+
+        IConfiguration configuration = context.Configuration;
+
+
+        services.AddSalesforceSdk(options =>
+        {
+            var appSettings = context.Configuration.GetSection("AppSettings");
+            options.BaseUri = appSettings["SalesforceUri"];
+            options.ClientId = appSettings["SalesforceClientId"];
+            options.ClientSecret = appSettings["SalesforceClientSecret"];
+            options.BaseAddress = appSettings["SalesforceUri"];
+        });
     })
     .Build();
 
 host.Start();
 
-//var service = host.Services.GetRequiredService<RagicUtility>();
-//var metaService = host.Services.GetRequiredService<RecordReviewMetatdataUtility>();
-//var weeklyAuditService = host.Services.GetRequiredService<WeeklyArcherAudit>();
-//var reuploadService = host.Services.GetRequiredService<ReuploadBoxFiles>();
-var pdfMerger = host.Services.GetRequiredService<PdfMerger>();
-var CaseWorksAuditReport = host.Services.GetRequiredService<CaseWorksFHIRAudit>();
-var SettLitAudit = host.Services.GetRequiredService<SettLitAudit>();
-var DataVantScriptWriter = new DataVantScriptWriter();
+var reuploadService = host.Services.GetRequiredService<ReuploadBoxFiles>();
 
-//Select Job To Run
 
-//pdfMerger.StichPdfs();
 
-//await reuploadService.ReuploadFiles();
+await reuploadService.ManualStartReview("a0LNw000003yfLBMAY");
 
-//await weeklyAuditService.RunWeeklyArcherAudit();
-
-//await service.AuditCompletedMedicalReviews();
-
-//await metaService.AuditArcher();
-
-//await service.UpdateClientInformationOnRagic();
-
-//CaseWorksAuditReport.AuditCaseWorkFHIRFiles();
-
-//DataVantScriptWriter.WriteScripts();
-
-await SettLitAudit.AuditSettLit();

@@ -1,9 +1,11 @@
 using System.Collections.Concurrent;
+using System.Linq;
 using Box.Sdk.Gen;
 using Box.Sdk.Gen.Managers;
 using Box.Sdk.Gen.Schemas;
 using Box.V2.Config;
 using Laboratory;
+using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -21,15 +23,17 @@ public class BoxClient : IBoxClient
     public BoxClient(
         IOptions<BoxClientOptions> options,
         IHostEnvironment hostEnvironment,
-        ILogger<BoxClient> logger)
+        ILogger<BoxClient> logger,
+        IConfiguration configuration
+        )
     {
         _hostEnvironment = hostEnvironment;
         _logger = logger;
 
         //Set Developer Token
 
-        var clientId = "id";
-        var clientSecret = "secret";
+        var clientId = configuration.GetSection("AppSettings")["BoxClientId"];
+        var clientSecret = configuration.GetSection("AppSettings")["BoxClientSecret"];
 
         var config = new CcgConfig(clientId, clientSecret);
         var auth = new BoxCcgAuth(config).WithEnterpriseSubject("1158697473");
@@ -183,7 +187,9 @@ public class BoxClient : IBoxClient
             (FolderId: matterFolderId,
             FileName: $"{injuredPartyName}_{matterId}_{file.SalesforceDocumentId}{Path.GetExtension(file.TempFilePath)}",
             FilePath: file.TempFilePath));
-        await Parallel.ForEachAsync(filesToUpload, async (file, _) => await UploadFileToFolder(file));
+        await Parallel.ForEachAsync(filesToUpload, async (file, _) => await UploadFileToFolder(file) 
+                
+        );
     }
     #endregion
 }
